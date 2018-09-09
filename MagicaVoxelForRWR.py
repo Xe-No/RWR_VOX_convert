@@ -14,5 +14,9 @@ os.system(line)
 
 vx.TranslateVOXtoXML(path + ".vox")
 
+os.remove(path + ".vox")
+os.remove(path + ".skl")
+os.remove(path + ".bnd")
+
 
 input("Press enter to exit.")

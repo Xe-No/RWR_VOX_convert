@@ -65,11 +65,13 @@ def TranslateVOXtoXML(path_vox):
     def XYZItoVoxel(xyzi):
         global colors
         x, y, z, i = xyzi
-        r, g, b, a = chunk_rgba[i-2]
+        r, g, b, a = chunk_rgba[i-1]
+
         # print(chunk_rgba[0])
         x, y, z ,i, r, g, b, a = [ str(m) for m in [x, y, z, i, r, g, b, a] ]
     
         voxel = ET.fromstring('<voxel x="'+ x +'" y="'+ y +'" z="'+ z +'" r="'+ r +'" g="'+ g +'" b="'+ b +'" a="'+ a +'" />')
+        print(a + " "+ i)
         return voxel
 
     path_xml = path_vox[:-4]
@@ -133,13 +135,13 @@ def TranslateVOXtoXML(path_vox):
     # print(chunk_rgba)
     # print(rgba)
     # dirty
-    num_color = FromData(b_array[rgba[1]-8:rgba[1]-4]) /4 -1
-    num_color = int(num_color)
+    num_color = FromData(b_array[rgba[1]-8:rgba[1]-4]) /4 
+    num_color = int(num_color) 
 
     # print(chunk_rgba)
-    chunk_rgba = chunk_rgba[4:].reshape((num_color,4)).astype('float') / 255
+    chunk_rgba = chunk_rgba.reshape((num_color,4)).astype('float') / 255
     chunk_rgba = chunk_rgba.round(4) 
-    # print(chunk_rgba)
+    print(chunk_rgba)
 
     method = 1
     # xml generate
