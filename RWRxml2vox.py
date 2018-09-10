@@ -87,7 +87,9 @@ def TranslateXMLtoVOX(path_xml):
     n = 4 * m + 4
     l = 12 * 3 +12 + n + 1024
 
-    
+    print("Total voxel number:"+ str(m))
+
+    # transform into byte array
     flat = lambda t: [x for sub in t for x in flat(sub)] if isinstance(t, Iterable) else [t]
     chunk_init = bytes(flat([
                     ToCharacterCode("VOX "), ToData(150),
@@ -118,6 +120,8 @@ def TranslateXMLtoVOX(path_xml):
         f.write(chunk_rgba)
     # print(chunk_xyzi)
 
+    print("Process .xml -> .xml.vox + .xml.skl + .xml.bnd Finished.")
+
 
     # chunk_init.tofile("test.out")
     # chunk_size.tofile("test.out")
@@ -128,3 +132,4 @@ def TranslateXMLtoVOX(path_xml):
 if __name__ == '__main__':
     # TranslateXMLtoVOX(sys.argv[1])
     TranslateXMLtoVOX("test.xml")
+    input()

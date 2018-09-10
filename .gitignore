@@ -5,6 +5,8 @@
 *.egg-info
 dist
 build
+*.spec
+
 
 # RWR:
 *.xml

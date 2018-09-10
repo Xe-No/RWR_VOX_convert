@@ -71,7 +71,7 @@ def TranslateVOXtoXML(path_vox):
         x, y, z ,i, r, g, b, a = [ str(m) for m in [x, y, z, i, r, g, b, a] ]
     
         voxel = ET.fromstring('<voxel x="'+ x +'" y="'+ y +'" z="'+ z +'" r="'+ r +'" g="'+ g +'" b="'+ b +'" a="'+ a +'" />')
-        print(a + " "+ i)
+        # print(a + " "+ i)
         return voxel
 
     path_xml = path_vox[:-4]
@@ -107,11 +107,13 @@ def TranslateVOXtoXML(path_vox):
     # nSHP = GetChunkIndex(b_array, addr)
     # addr = nSHP[2]
 
+    # parse binary array to xml tree structure
     addr = 8
     targets = []
     heads = []
     while 1:
         target = GetChunkIndex(b_array, addr)
+        # print(target)
         if not target:
             break
         addr = target[2]
@@ -119,7 +121,9 @@ def TranslateVOXtoXML(path_vox):
         targets.append(target)
 
 
+    print(targets)
     xyzi = targets[heads.index('XYZI')]
+
     rgba = targets[heads.index('RGBA')]
 
 
@@ -129,6 +133,7 @@ def TranslateVOXtoXML(path_vox):
     num_block = FromData(chunk_xyzi[0:4])
     chunk_xyzi = chunk_xyzi[4:].reshape((num_block,4))
     chunk_xyzi = [ TransformationReverse(xyzi) for xyzi in chunk_xyzi ]
+    print("Total voxel number:"+ str(num_block))
     # print(chunk_xyzi)
 
     # num_colors = 6
@@ -141,7 +146,7 @@ def TranslateVOXtoXML(path_vox):
     # print(chunk_rgba)
     chunk_rgba = chunk_rgba.reshape((num_color,4)).astype('float') / 255
     chunk_rgba = chunk_rgba.round(4) 
-    print(chunk_rgba)
+    # print(chunk_rgba)
 
     method = 1
     # xml generate
@@ -171,8 +176,7 @@ def TranslateVOXtoXML(path_vox):
         tree = ET.parse(path_xml)
         root = tree.getroot()
 
-
-
+    print("Process .xml.vox + .xml.skl + .xml.bnd --> .xml Finished")
 
 
 
@@ -181,3 +185,4 @@ def TranslateVOXtoXML(path_vox):
 if __name__ == '__main__':
     # TranslateVOXtoXML(sys.argv[1])
     TranslateVOXtoXML("test.xml.vox")
+    input()
