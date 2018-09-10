@@ -3,10 +3,8 @@
 *.so
 *.egg
 *.egg-info
-*.spec
 dist
 build
-
 
 # RWR:
 *.xml
