@@ -36,7 +36,7 @@ def FromData(int8x4):
 
 def TransformationReverse(vec4):
     trans_bias = 49
-    vec4 = vec4 - [trans_bias, trans_bias, 0, 0]
+    vec4 = vec4 - [trans_bias, trans_bias, trans_bias, 0]
     matrix = np.matrix([
             [1,0,0,0],
             [0,0,1,0],
@@ -71,14 +71,16 @@ def TranslateVOXtoXML(path_vox):
         x, y, z ,i, r, g, b, a = [ str(m) for m in [x, y, z, i, r, g, b, a] ]
     
         voxel = ET.fromstring('<voxel x="'+ x +'" y="'+ y +'" z="'+ z +'" r="'+ r +'" g="'+ g +'" b="'+ b +'" a="'+ a +'" />')
+        # print(voxel)
         # print(a + " "+ i)
         return voxel
 
-    path_xml = path_vox[:-4]
-    path_bnd = path_xml + ".bnd"
-    path_skl = path_xml + ".skl"
+    key = path_vox[:-4]
+    path_xml = key + ".xml"
+    path_bnd = key + ".bnd"
+    path_skl = key + ".skl"
 
-    print("Process .xml.vox + .xml.skl + .xml.bnd --> .xml Start.")
+    print("Input: " + path_vox)
 
     b_array = np.fromfile(path_vox,dtype='uint8')
 
@@ -121,7 +123,7 @@ def TranslateVOXtoXML(path_vox):
         targets.append(target)
 
 
-    print(targets)
+    # print(targets)
     xyzi = targets[heads.index('XYZI')]
 
     rgba = targets[heads.index('RGBA')]
@@ -148,7 +150,7 @@ def TranslateVOXtoXML(path_vox):
     chunk_rgba = chunk_rgba.round(4) 
     # print(chunk_rgba)
 
-    method = 1
+    method = 2
     # xml generate
     if method == 1:
         model = ET.Element('model')
@@ -167,22 +169,55 @@ def TranslateVOXtoXML(path_vox):
         tree = ET.ElementTree(model)
     
         prettyXml(tree.getroot(), '\t', '\n')
+
         tree.write(path_xml)
 
     if method == 2:
         model = ET.Element('model')
         voxels = ET.SubElement(model, 'voxels')
+        skeleton = ET.SubElement(model, 'skeleton')
+        skeletonVoxelBindings = ET.SubElement(model, 'skeletonVoxelBindings')
 
-        tree = ET.parse(path_xml)
-        root = tree.getroot()
+        for xyzi in chunk_xyzi:
+            voxels.append(XYZItoVoxel(xyzi))
 
-    print("Process .xml.vox + .xml.skl + .xml.bnd --> .xml Finished")
+
+        tree = ET.ElementTree(model)
+        prettyXml(tree.getroot(), '\t', '\n')
+        tree.write(path_xml)
+        # root = tree.getroot()
+
+    print("Output: " + path_xml)
+    print("")
+
+
+def getFileName(path):
+    ''' 获取指定目录下的所有指定后缀的文件名 '''
+    f_list = os.listdir(path)
+    ret_list = []
+    # print f_list
+    for i in f_list:
+        # os.path.splitext():分离文件名与扩展名
+        if os.path.splitext(i)[1] == '.vox':
+            ret_list.append(i)
+    return ret_list
 
 
 
 
 
 if __name__ == '__main__':
-    # TranslateVOXtoXML(sys.argv[1])
-    TranslateVOXtoXML("test.xml.vox")
-    input()
+    num_argv = len(sys.argv)
+    print('Author: Xe-No')
+    if num_argv == 1:
+        print('Tanslate all vox files')
+        list_vox = getFileName('./')
+        for path_vox in list_vox:
+            TranslateVOXtoXML(path_vox)  
+    elif num_argv == 2:
+        TranslateVOXtoXML(sys.argv[1])
+    else:
+        print('Invalid argument number')
+        sys.exit()
+
+    input('Complete!')

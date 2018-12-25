@@ -20,19 +20,22 @@ def Transformation(vec4):
             [0,1,0,0],
             [0,0,0,1]
             ])
-    return (np.dot(matrix,vec4) + [trans_bias, trans_bias, 0, 0] ).tolist()
+    return (np.dot(matrix,vec4) + [trans_bias, trans_bias, trans_bias, 0] ).tolist()
 
 def TranslateXMLtoVOX(path_xml):
-
-    print("Process .xml -> .xml.vox + .xml.skl + .xml.bnd Start.")
     box_size = 99
     trans_bias = 49
-    path_vox = path_xml + ".vox"
-    path_skl = path_xml + ".skl"
-    path_bnd = path_xml + ".bnd"
+    key = path_xml[:-4]
+    path_vox = key + ".vox"
+    # path_skl = path_xml + ".skl"
+    # path_bnd = path_xml + ".bnd"
+    print("Input: " + path_xml)
 
     tree = ET.parse(path_xml)
     root = tree.getroot()
+    if root.tag != 'model':
+        print(path_xml+' is not a valid model.')
+        return False
 
     # parse voxel data
     data_xyzi = []
@@ -58,13 +61,13 @@ def TranslateXMLtoVOX(path_xml):
         data_xyzi.append(xyzi)
 
 
-    skeleton = root.find('skeleton')
-    tree = ET.ElementTree(skeleton) 
-    tree.write(path_skl)
+    # skeleton = root.find('skeleton')
+    # tree = ET.ElementTree(skeleton) 
+    # tree.write(path_skl)
 
-    skeletonVoxelBindings = root.find('skeletonVoxelBindings')
-    tree = ET.ElementTree(skeletonVoxelBindings) 
-    tree.write(path_bnd)
+    # skeletonVoxelBindings = root.find('skeletonVoxelBindings')
+    # tree = ET.ElementTree(skeletonVoxelBindings) 
+    # tree.write(path_bnd)
 
 
 
@@ -86,10 +89,9 @@ def TranslateXMLtoVOX(path_xml):
     m = len(data_xyzi)
     n = 4 * m + 4
     l = 12 * 3 +12 + n + 1024
+    print("Total voxel number:"+ str(n))
 
-    print("Total voxel number:"+ str(m))
-
-    # transform into byte array
+    
     flat = lambda t: [x for sub in t for x in flat(sub)] if isinstance(t, Iterable) else [t]
     chunk_init = bytes(flat([
                     ToCharacterCode("VOX "), ToData(150),
@@ -118,18 +120,36 @@ def TranslateXMLtoVOX(path_xml):
         f.write(chunk_size)
         f.write(chunk_xyzi)
         f.write(chunk_rgba)
-    # print(chunk_xyzi)
 
-    print("Process .xml -> .xml.vox + .xml.skl + .xml.bnd Finished.")
+    print("Outpu: " + path_vox)
+    print("")
 
 
-    # chunk_init.tofile("test.out")
-    # chunk_size.tofile("test.out")
-    # chunk_xyzi.tofile("test.out")
-    # chunk_rgba.tofile("test.out")
+def getFileName(path):
+    ''' 获取指定目录下的所有指定后缀的文件名 '''
+    f_list = os.listdir(path)
+    ret_list = []
+    # print f_list
+    for i in f_list:
+        # os.path.splitext():分离文件名与扩展名
+        if os.path.splitext(i)[1] == '.xml':
+            ret_list.append(i)
+    return ret_list
 
 
 if __name__ == '__main__':
-    # TranslateXMLtoVOX(sys.argv[1])
-    TranslateXMLtoVOX("test.xml")
-    input()
+    num_argv = len(sys.argv)
+    print('Author: Xe-No')
+    if num_argv == 1:
+        print('Tanslate all xml files')
+        list_xml = getFileName('./')
+        for path_xml in list_xml:
+            TranslateXMLtoVOX(path_xml)
+    elif num_argv == 2:
+        TranslateXMLtoVOX(sys.argv[1])
+    else:
+        print('Invalid argument number')
+        sys.exit()
+
+    input('Complete!')
+
