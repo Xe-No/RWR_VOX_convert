@@ -13,3 +13,5 @@ build
 *.xml.vox
 *.xml.skl
 *.xml.bnd
+*.vox
+*.bnd.vox

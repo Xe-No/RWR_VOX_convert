@@ -121,7 +121,7 @@ def TranslateXMLtoVOX(path_xml):
         f.write(chunk_xyzi)
         f.write(chunk_rgba)
 
-    print("Outpu: " + path_vox)
+    print("Output: " + path_vox)
     print("")
 
 

@@ -61,8 +61,46 @@ def TranslateVOXtoXML(path_vox):
         return [char, addr_start, addr_end]
 
     def GetSticks(path_skl):
-        skeleton = ET.parse(path_skl)
-        skl_root = skeleton.getroot()
+        if os.path.exists(path_skl):
+            skeleton = ET.parse(path_skl)
+            skl_root = skeleton.getroot()
+        else: 
+            skl_root = ET.fromstring("""<skeleton>
+    <particle bodyAreaHint="2" id="50" invMass="15.000000" name="head" x="0.500000" y="55.500000" z="0.500000" />
+    <particle bodyAreaHint="2" id="45" invMass="10.000000" name="neck" x="0.500000" y="48.500000" z="0.500000" />
+    <particle bodyAreaHint="2" id="15" invMass="8.000000" name="rightshoulder" x="-6.500000" y="45.500000" z="0.500000" />
+    <particle bodyAreaHint="2" id="25" invMass="8.000000" name="leftshoulder" x="7.500000" y="45.500000" z="0.500000" />
+    <particle bodyAreaHint="2" id="12274576" invMass="70.000000" name="rightelbow" x="-14.500000" y="45.500000" z="0.500000" />
+    <particle bodyAreaHint="2" id="12273840" invMass="70.000000" name="leftelbow" x="15.500000" y="45.500000" z="0.500000" />
+    <particle bodyAreaHint="2" id="12274112" invMass="200.000000" name="righthand" x="-21.500000" y="44.500000" z="0.500000" />
+    <particle bodyAreaHint="2" id="12273488" invMass="200.000000" name="lefthand" x="22.500000" y="44.500000" z="0.500000" />
+    <particle bodyAreaHint="1" id="1" invMass="10.000000" name="midspine" x="0.500000" y="35.500000" z="0.500000" />
+    <particle bodyAreaHint="1" id="10" invMass="10.000000" name="righthip" x="-4.500000" y="28.500000" z="0.500000" />
+    <particle bodyAreaHint="1" id="20" invMass="10.000000" name="lefthip" x="5.500000" y="28.500000" z="0.500000" />
+    <particle bodyAreaHint="1" id="12285328" invMass="15.000000" name="rightknee" x="-4.500000" y="13.500000" z="0.500000" />
+    <particle bodyAreaHint="1" id="21" invMass="15.000000" name="leftknee" x="5.500000" y="13.500000" z="0.500000" />
+    <particle bodyAreaHint="1" id="12285680" invMass="20.000000" name="rightfoot" x="-4.500000" y="0.500000" z="0.500000" />
+    <particle bodyAreaHint="1" id="22" invMass="20.000000" name="leftfoot" x="5.500000" y="0.500000" z="0.500000" />
+    <stick a="12285680" b="12285328" />
+    <stick a="12285328" b="10" />
+    <stick a="10" b="20" />
+    <stick a="20" b="21" />
+    <stick a="21" b="22" />
+    <stick a="10" b="1" />
+    <stick a="1" b="15" />
+    <stick a="15" b="25" />
+    <stick a="20" b="1" />
+    <stick a="1" b="25" />
+    <stick a="25" b="12273840" />
+    <stick a="12273840" b="12273488" />
+    <stick a="15" b="12274576" />
+    <stick a="12274576" b="12274112" />
+    <stick a="15" b="45" />
+    <stick a="45" b="25" />
+    <stick a="45" b="50" />
+</skeleton>""")
+
+
         particles = {}
         sticks = []
 
@@ -145,8 +183,7 @@ def TranslateVOXtoXML(path_vox):
 
     sticks = GetSticks(path_skl)
 
-    print("input:")
-    print(path_vox)
+    print("Input:", path_vox)
 
     b_array = np.fromfile(path_vox,dtype='uint8')
 
@@ -222,8 +259,42 @@ def TranslateVOXtoXML(path_vox):
         model = ET.Element('model')
         voxels = ET.SubElement(model, 'voxels')
         skeletonVoxelBindings = ET.SubElement(model, 'skeletonVoxelBindings')
-        skeleton = ET.parse(path_skl)
-        model.append(skeleton.getroot())
+        # skeleton = ET.parse(path_skl)
+        skeleton = ET.fromstring("""<skeleton>
+    <particle bodyAreaHint="2" id="50" invMass="15.000000" name="head" x="0.500000" y="55.500000" z="0.500000" />
+    <particle bodyAreaHint="2" id="45" invMass="10.000000" name="neck" x="0.500000" y="48.500000" z="0.500000" />
+    <particle bodyAreaHint="2" id="15" invMass="8.000000" name="rightshoulder" x="-6.500000" y="45.500000" z="0.500000" />
+    <particle bodyAreaHint="2" id="25" invMass="8.000000" name="leftshoulder" x="7.500000" y="45.500000" z="0.500000" />
+    <particle bodyAreaHint="2" id="12274576" invMass="70.000000" name="rightelbow" x="-14.500000" y="45.500000" z="0.500000" />
+    <particle bodyAreaHint="2" id="12273840" invMass="70.000000" name="leftelbow" x="15.500000" y="45.500000" z="0.500000" />
+    <particle bodyAreaHint="2" id="12274112" invMass="200.000000" name="righthand" x="-21.500000" y="44.500000" z="0.500000" />
+    <particle bodyAreaHint="2" id="12273488" invMass="200.000000" name="lefthand" x="22.500000" y="44.500000" z="0.500000" />
+    <particle bodyAreaHint="1" id="1" invMass="10.000000" name="midspine" x="0.500000" y="35.500000" z="0.500000" />
+    <particle bodyAreaHint="1" id="10" invMass="10.000000" name="righthip" x="-4.500000" y="28.500000" z="0.500000" />
+    <particle bodyAreaHint="1" id="20" invMass="10.000000" name="lefthip" x="5.500000" y="28.500000" z="0.500000" />
+    <particle bodyAreaHint="1" id="12285328" invMass="15.000000" name="rightknee" x="-4.500000" y="13.500000" z="0.500000" />
+    <particle bodyAreaHint="1" id="21" invMass="15.000000" name="leftknee" x="5.500000" y="13.500000" z="0.500000" />
+    <particle bodyAreaHint="1" id="12285680" invMass="20.000000" name="rightfoot" x="-4.500000" y="0.500000" z="0.500000" />
+    <particle bodyAreaHint="1" id="22" invMass="20.000000" name="leftfoot" x="5.500000" y="0.500000" z="0.500000" />
+    <stick a="12285680" b="12285328" />
+    <stick a="12285328" b="10" />
+    <stick a="10" b="20" />
+    <stick a="20" b="21" />
+    <stick a="21" b="22" />
+    <stick a="10" b="1" />
+    <stick a="1" b="15" />
+    <stick a="15" b="25" />
+    <stick a="20" b="1" />
+    <stick a="1" b="25" />
+    <stick a="25" b="12273840" />
+    <stick a="12273840" b="12273488" />
+    <stick a="15" b="12274576" />
+    <stick a="12274576" b="12274112" />
+    <stick a="15" b="45" />
+    <stick a="45" b="25" />
+    <stick a="45" b="50" />
+</skeleton>""")
+        model.append(skeleton)
 
     
     
@@ -256,8 +327,7 @@ def TranslateVOXtoXML(path_vox):
         # root = tree.getroot()
 
     
-    print("output:")
-    print(path_xml)
+    print("Output:", path_xml)
 
 def getFileName(path):
     ''' 获取指定目录下的所有指定后缀的文件名 '''
@@ -273,16 +343,20 @@ def getFileName(path):
     return ret_list
 
 
-def main():
-    list_vox = getFileName('./')
-    for path_vox in list_vox:
-        TranslateVOXtoXML(path_vox)
-
-
 if __name__ == '__main__':
+    num_argv = len(sys.argv)
+    print('Author: Xe-No')
+    if num_argv == 1:
+        print('Tanslate all vox files')
+        list_vox = getFileName('./')
+        for path_vox in list_vox:
+            TranslateVOXtoXML(path_vox)  
+    elif num_argv == 2:
+        TranslateVOXtoXML(sys.argv[1])
+    else:
+        print('Invalid argument number')
+        sys.exit()
 
-    main()
-
-
+    input('Complete!')
     # input()
 

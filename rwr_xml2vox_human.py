@@ -51,6 +51,7 @@ def TranslateXMLtoBND(path_xml):
     # parse voxel data
     data_xyzi = []
     voxel_index = 0
+    # print(list_vg)
     for voxel in root.iterfind('voxels/voxel'):
         xyzi =  [
                     voxel.attrib['x'],
@@ -87,7 +88,7 @@ def TranslateXMLtoBND(path_xml):
     tree = ET.ElementTree(skeletonVoxelBindings) 
     # tree.write(path_bnd)
 
-    print(color_rule)
+    # print(color_rule)
 
     data_xyzi = np.asarray(data_xyzi, dtype=int)
     data_xyzi = [ Transformation(xyzi) for xyzi in data_xyzi ]
@@ -104,7 +105,7 @@ def TranslateXMLtoBND(path_xml):
     m = len(data_xyzi)
     n = 4 * m + 4
     l = 12 * 3 +12 + n + 1024
-    print("Total voxel number:"+ str(n))
+    print("Total voxel number:"+ str(m))
 
     
     flat = lambda t: [x for sub in t for x in flat(sub)] if isinstance(t, Iterable) else [t]
@@ -190,7 +191,7 @@ def TranslateXMLtoVOX(path_xml):
 
 
 
-    print(color_rule)
+    # print(color_rule)
 
     data_xyzi = np.asarray(data_xyzi, dtype=int)
     data_xyzi = [ Transformation(xyzi) for xyzi in data_xyzi ]
@@ -207,7 +208,7 @@ def TranslateXMLtoVOX(path_xml):
     m = len(data_xyzi)
     n = 4 * m + 4
     l = 12 * 3 +12 + n + 1024
-    print("Total voxel number:"+ str(n))
+    print("Total voxel number:"+ str(m))
 
     
     flat = lambda t: [x for sub in t for x in flat(sub)] if isinstance(t, Iterable) else [t]

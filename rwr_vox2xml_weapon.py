@@ -84,32 +84,6 @@ def TranslateVOXtoXML(path_vox):
 
     b_array = np.fromfile(path_vox,dtype='uint8')
 
-    # addr = 8
-    # main = GetChunkIndex(b_array, addr)
-    # addr = main[2]
-
-    # temp = GetChunkIndex(b_array, addr)
-    # if temp[0] == "PACK":
-    #     # unfinished for this case
-    #     pack = temp
-    #     addr += 16
-
-    # size = GetChunkIndex(b_array, addr)
-    # addr = size[2]
-
-    # xyzi = GetChunkIndex(b_array, addr)
-    # addr = xyzi[2]
-
-    # nTRN = GetChunkIndex(b_array, addr)
-    # addr = nTRN[2]
-
-    # nGRP = GetChunkIndex(b_array, addr)
-    # addr = nGRP[2]
-
-    # nSHP = GetChunkIndex(b_array, addr)
-    # addr = nSHP[2]
-
-    # parse binary array to xml tree structure
     addr = 8
     targets = []
     heads = []
@@ -189,6 +163,55 @@ def TranslateVOXtoXML(path_vox):
 
     print("Output: " + path_xml)
     print("")
+
+def VOXToChunks(b_array):
+    addr = 8
+    targets = []
+    heads = []
+    while 1:
+        target = GetChunkIndex(b_array, addr)
+        # print(target)
+        if not target:
+            break
+        addr = target[2]
+        heads.append(target[0])
+        targets.append(target)
+
+    # print(targets)
+    xyzi = targets[heads.index('XYZI')]
+    rgba = targets[heads.index('RGBA')]
+
+    chunk_xyzi = b_array[xyzi[1]:xyzi[2]]
+    chunk_rgba = b_array[rgba[1]:rgba[2]]
+
+    num_block = FromData(chunk_xyzi[0:4])
+    chunk_xyzi = chunk_xyzi[4:].reshape((num_block,4))
+    chunk_xyzi = [ TransformationReverse(xyzi) for xyzi in chunk_xyzi ]
+    # print("Total voxel number:"+ str(num_block))
+    # print(chunk_xyzi)
+
+    # num_colors = 6
+    # print(chunk_rgba)
+    # print(rgba)
+    # dirty
+    num_color = FromData(b_array[rgba[1]-8:rgba[1]-4]) /4 
+    num_color = int(num_color) 
+
+    # print(chunk_rgba)
+    chunk_rgba = chunk_rgba.reshape((num_color,4)).astype('float') / 255
+    chunk_rgba = chunk_rgba.round(4) 
+    # print(chunk_rgba)
+
+    return [chunk_xyzi, chunk_rgba]
+
+
+def ChunkToVoxels(chunk_xyzi):
+    voxels = ET.Element(model, 'voxels')
+    for xyzi in chunk_xyzi:
+        voxels.append(XYZItoVoxel(xyzi))
+    return voxels
+
+
 
 
 def getFileName(path):
