@@ -33,15 +33,15 @@ def FromData(int8x4):
     x.dtype = 'uint32'
     return x[0]
 
-def TransformationReverse(vec4):
-    trans_bias = 49
+def TransformationReverse(vec4, sizes):
+    x, y, z = [ int( (sizes[0]-1) /2  )  for num in sizes  ]
+    vec4 = vec4 - [x, y, 0, 0]
     matrix = np.matrix([
-        [1,0,0,0],
-        [0,0,1,0],
-        [0,-1,0,0],
-        [0,0,0,1]
-        ])
-    vec4 = vec4 - [trans_bias, trans_bias, 0, 0]
+            [1,0,0,0],
+            [0,0,1,0],
+            [0,-1,0,0],
+            [0,0,0,1]
+            ])
     return np.dot(matrix,vec4).tolist()[0]
 
 def GetChunkIndex(b_array, addr):
@@ -71,11 +71,16 @@ def VOXToChunks(b_array):
         targets.append(target)
 
     # print(targets)
+    size = targets[heads.index('SIZE')]
     xyzi = targets[heads.index('XYZI')]
     rgba = targets[heads.index('RGBA')]
 
+    chunk_size = b_array[size[1]:size[2]]
     chunk_xyzi = b_array[xyzi[1]:xyzi[2]]
     chunk_rgba = b_array[rgba[1]:rgba[2]]
+
+    sizes = [ FromData( temp ) for temp in chunk_size.reshape((3,4)) ]
+    print(sizes)
 
     num_block = FromData(chunk_xyzi[0:4])
 
@@ -87,7 +92,7 @@ def VOXToChunks(b_array):
 
 
 
-    chunk_xyzi = [ TransformationReverse(xyzi) for xyzi in chunk_xyzi ]
+    chunk_xyzi = [ TransformationReverse(xyzi, sizes) for xyzi in chunk_xyzi ]
 
     num_color = FromData(b_array[rgba[1]-8:rgba[1]-4]) /4 
     num_color = int(num_color) 
@@ -126,7 +131,7 @@ def ChunkToVoxels(chunk_xyzi_rgba):
 def GetSkeleton(path_skl):
     if os.path.exists(path_skl):
         skeleton_tree = ET.parse(path_skl)
-        skeleton = skeleton_tree.getroot()
+        skeleton = skeleton_tree
     else: 
         skeleton = ET.fromstring("""<skeleton>
 <particle bodyAreaHint="2" id="50" invMass="15.000000" name="head" x="0.500000" y="55.500000" z="0.500000" />

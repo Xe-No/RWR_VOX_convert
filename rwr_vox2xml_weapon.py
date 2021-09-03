@@ -34,9 +34,9 @@ def FromData(int8x4):
     x.dtype = 'uint32'
     return x[0]
 
-def TransformationReverse(vec4):
-    trans_bias = 49
-    vec4 = vec4 - [trans_bias, trans_bias, trans_bias, 0]
+def TransformationReverse(vec4, sizes):
+    x, y, z = [ int( (sizes[0]-1) /2  )  for num in sizes  ]
+    vec4 = vec4 - [x, y, z, 0]
     matrix = np.matrix([
             [1,0,0,0],
             [0,0,1,0],
@@ -98,17 +98,20 @@ def TranslateVOXtoXML(path_vox):
 
 
     # print(targets)
+    size = targets[heads.index('SIZE')]
     xyzi = targets[heads.index('XYZI')]
-
     rgba = targets[heads.index('RGBA')]
 
-
+    chunk_size = b_array[size[1]:size[2]]
     chunk_xyzi = b_array[xyzi[1]:xyzi[2]]
     chunk_rgba = b_array[rgba[1]:rgba[2]]
 
+    sizes = [ FromData( temp ) for temp in chunk_size.reshape((3,4)) ]
+    print(sizes)
+
     num_block = FromData(chunk_xyzi[0:4])
     chunk_xyzi = chunk_xyzi[4:].reshape((num_block,4))
-    chunk_xyzi = [ TransformationReverse(xyzi) for xyzi in chunk_xyzi ]
+    chunk_xyzi = [ TransformationReverse(xyzi, sizes) for xyzi in chunk_xyzi ]
     print("Total voxel number:"+ str(num_block))
     # print(chunk_xyzi)
 

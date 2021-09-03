@@ -34,9 +34,9 @@ def FromData(int8x4):
     x.dtype = 'uint32'
     return x[0]
 
-def TransformationReverse(vec4):
-    trans_bias = 49
-    vec4 = vec4 - [trans_bias, trans_bias, 0, 0]
+def TransformationReverse(vec4, sizes):
+    x, y, z = [ int( (sizes[0]-1) /2  )  for num in sizes  ]
+    vec4 = vec4 - [x, y, 0, 0]
     matrix = np.matrix([
             [1,0,0,0],
             [0,0,1,0],
@@ -45,6 +45,48 @@ def TransformationReverse(vec4):
             ])
     return np.dot(matrix,vec4).tolist()[0]
 
+
+def GetSkeleton(path_skl):
+    if os.path.exists(path_skl):
+        skeleton = ET.parse(path_skl)
+        print(path_skl)
+    else: 
+        skeleton_ele = ET.fromstring("""<skeleton>
+        <particle bodyAreaHint="2" id="50" invMass="15.000000" name="head" x="0.500000" y="55.500000" z="0.500000" />
+        <particle bodyAreaHint="2" id="45" invMass="10.000000" name="neck" x="0.500000" y="48.500000" z="0.500000" />
+        <particle bodyAreaHint="2" id="15" invMass="8.000000" name="rightshoulder" x="-6.500000" y="45.500000" z="0.500000" />
+        <particle bodyAreaHint="2" id="25" invMass="8.000000" name="leftshoulder" x="7.500000" y="45.500000" z="0.500000" />
+        <particle bodyAreaHint="2" id="12274576" invMass="70.000000" name="rightelbow" x="-14.500000" y="45.500000" z="0.500000" />
+        <particle bodyAreaHint="2" id="12273840" invMass="70.000000" name="leftelbow" x="15.500000" y="45.500000" z="0.500000" />
+        <particle bodyAreaHint="2" id="12274112" invMass="200.000000" name="righthand" x="-21.500000" y="44.500000" z="0.500000" />
+        <particle bodyAreaHint="2" id="12273488" invMass="200.000000" name="lefthand" x="22.500000" y="44.500000" z="0.500000" />
+        <particle bodyAreaHint="1" id="1" invMass="10.000000" name="midspine" x="0.500000" y="35.500000" z="0.500000" />
+        <particle bodyAreaHint="1" id="10" invMass="10.000000" name="righthip" x="-4.500000" y="28.500000" z="0.500000" />
+        <particle bodyAreaHint="1" id="20" invMass="10.000000" name="lefthip" x="5.500000" y="28.500000" z="0.500000" />
+        <particle bodyAreaHint="1" id="12285328" invMass="15.000000" name="rightknee" x="-4.500000" y="13.500000" z="0.500000" />
+        <particle bodyAreaHint="1" id="21" invMass="15.000000" name="leftknee" x="5.500000" y="13.500000" z="0.500000" />
+        <particle bodyAreaHint="1" id="12285680" invMass="20.000000" name="rightfoot" x="-4.500000" y="0.500000" z="0.500000" />
+        <particle bodyAreaHint="1" id="22" invMass="20.000000" name="leftfoot" x="5.500000" y="0.500000" z="0.500000" />
+        <stick a="12285680" b="12285328" />
+        <stick a="12285328" b="10" />
+        <stick a="10" b="20" />
+        <stick a="20" b="21" />
+        <stick a="21" b="22" />
+        <stick a="10" b="1" />
+        <stick a="1" b="15" />
+        <stick a="15" b="25" />
+        <stick a="20" b="1" />
+        <stick a="1" b="25" />
+        <stick a="25" b="12273840" />
+        <stick a="12273840" b="12273488" />
+        <stick a="15" b="12274576" />
+        <stick a="12274576" b="12274112" />
+        <stick a="15" b="45" />
+        <stick a="45" b="25" />
+        <stick a="45" b="50" />
+    </skeleton>""")
+        skeleton = ET.ElementTree(skeleton_ele)
+    return skeleton
 
 def TranslateVOXtoXML(path_vox):
     def GetChunkIndex(b_array, addr):
@@ -61,57 +103,21 @@ def TranslateVOXtoXML(path_vox):
         return [char, addr_start, addr_end]
 
     def GetSticks(path_skl):
-        if os.path.exists(path_skl):
-            skeleton = ET.parse(path_skl)
-            skl_root = skeleton.getroot()
-        else: 
-            skl_root = ET.fromstring("""<skeleton>
-    <particle bodyAreaHint="2" id="50" invMass="15.000000" name="head" x="0.500000" y="55.500000" z="0.500000" />
-    <particle bodyAreaHint="2" id="45" invMass="10.000000" name="neck" x="0.500000" y="48.500000" z="0.500000" />
-    <particle bodyAreaHint="2" id="15" invMass="8.000000" name="rightshoulder" x="-6.500000" y="45.500000" z="0.500000" />
-    <particle bodyAreaHint="2" id="25" invMass="8.000000" name="leftshoulder" x="7.500000" y="45.500000" z="0.500000" />
-    <particle bodyAreaHint="2" id="12274576" invMass="70.000000" name="rightelbow" x="-14.500000" y="45.500000" z="0.500000" />
-    <particle bodyAreaHint="2" id="12273840" invMass="70.000000" name="leftelbow" x="15.500000" y="45.500000" z="0.500000" />
-    <particle bodyAreaHint="2" id="12274112" invMass="200.000000" name="righthand" x="-21.500000" y="44.500000" z="0.500000" />
-    <particle bodyAreaHint="2" id="12273488" invMass="200.000000" name="lefthand" x="22.500000" y="44.500000" z="0.500000" />
-    <particle bodyAreaHint="1" id="1" invMass="10.000000" name="midspine" x="0.500000" y="35.500000" z="0.500000" />
-    <particle bodyAreaHint="1" id="10" invMass="10.000000" name="righthip" x="-4.500000" y="28.500000" z="0.500000" />
-    <particle bodyAreaHint="1" id="20" invMass="10.000000" name="lefthip" x="5.500000" y="28.500000" z="0.500000" />
-    <particle bodyAreaHint="1" id="12285328" invMass="15.000000" name="rightknee" x="-4.500000" y="13.500000" z="0.500000" />
-    <particle bodyAreaHint="1" id="21" invMass="15.000000" name="leftknee" x="5.500000" y="13.500000" z="0.500000" />
-    <particle bodyAreaHint="1" id="12285680" invMass="20.000000" name="rightfoot" x="-4.500000" y="0.500000" z="0.500000" />
-    <particle bodyAreaHint="1" id="22" invMass="20.000000" name="leftfoot" x="5.500000" y="0.500000" z="0.500000" />
-    <stick a="12285680" b="12285328" />
-    <stick a="12285328" b="10" />
-    <stick a="10" b="20" />
-    <stick a="20" b="21" />
-    <stick a="21" b="22" />
-    <stick a="10" b="1" />
-    <stick a="1" b="15" />
-    <stick a="15" b="25" />
-    <stick a="20" b="1" />
-    <stick a="1" b="25" />
-    <stick a="25" b="12273840" />
-    <stick a="12273840" b="12273488" />
-    <stick a="15" b="12274576" />
-    <stick a="12274576" b="12274112" />
-    <stick a="15" b="45" />
-    <stick a="45" b="25" />
-    <stick a="45" b="50" />
-</skeleton>""")
+        skeleton = GetSkeleton(path_skl)
+        print(skeleton)
 
 
         particles = {}
         sticks = []
 
-        for voxel in skl_root.iterfind('particle'):
+        for voxel in skeleton.iterfind('particle'):
             particles[voxel.attrib['id']] = [
                         float(voxel.attrib['x']),
                         float(voxel.attrib['y']),
                         float(voxel.attrib['z'])
             ]      
 
-        for voxel in skl_root.iterfind('stick'):
+        for voxel in skeleton.iterfind('stick'):
             stick = [particles[voxel.attrib['a']],particles[voxel.attrib['b']]]
             sticks.append(stick)
 
@@ -227,17 +233,21 @@ def TranslateVOXtoXML(path_vox):
 
 
     # print(targets)
+    # print(targets)
+    size = targets[heads.index('SIZE')]
     xyzi = targets[heads.index('XYZI')]
-
     rgba = targets[heads.index('RGBA')]
 
-
+    chunk_size = b_array[size[1]:size[2]]
     chunk_xyzi = b_array[xyzi[1]:xyzi[2]]
     chunk_rgba = b_array[rgba[1]:rgba[2]]
 
+    sizes = [ FromData( temp ) for temp in chunk_size.reshape((3,4)) ]
+    print(sizes)
+
     num_block = FromData(chunk_xyzi[0:4])
     chunk_xyzi = chunk_xyzi[4:].reshape((num_block,4))
-    chunk_xyzi = [ TransformationReverse(xyzi) for xyzi in chunk_xyzi ]
+    chunk_xyzi = [ TransformationReverse(xyzi, sizes) for xyzi in chunk_xyzi ]
     print("Total voxel number:"+ str(num_block))
     # print(chunk_xyzi)
 
@@ -259,42 +269,9 @@ def TranslateVOXtoXML(path_vox):
         model = ET.Element('model')
         voxels = ET.SubElement(model, 'voxels')
         skeletonVoxelBindings = ET.SubElement(model, 'skeletonVoxelBindings')
-        # skeleton = ET.parse(path_skl)
-        skeleton = ET.fromstring("""<skeleton>
-    <particle bodyAreaHint="2" id="50" invMass="15.000000" name="head" x="0.500000" y="55.500000" z="0.500000" />
-    <particle bodyAreaHint="2" id="45" invMass="10.000000" name="neck" x="0.500000" y="48.500000" z="0.500000" />
-    <particle bodyAreaHint="2" id="15" invMass="8.000000" name="rightshoulder" x="-6.500000" y="45.500000" z="0.500000" />
-    <particle bodyAreaHint="2" id="25" invMass="8.000000" name="leftshoulder" x="7.500000" y="45.500000" z="0.500000" />
-    <particle bodyAreaHint="2" id="12274576" invMass="70.000000" name="rightelbow" x="-14.500000" y="45.500000" z="0.500000" />
-    <particle bodyAreaHint="2" id="12273840" invMass="70.000000" name="leftelbow" x="15.500000" y="45.500000" z="0.500000" />
-    <particle bodyAreaHint="2" id="12274112" invMass="200.000000" name="righthand" x="-21.500000" y="44.500000" z="0.500000" />
-    <particle bodyAreaHint="2" id="12273488" invMass="200.000000" name="lefthand" x="22.500000" y="44.500000" z="0.500000" />
-    <particle bodyAreaHint="1" id="1" invMass="10.000000" name="midspine" x="0.500000" y="35.500000" z="0.500000" />
-    <particle bodyAreaHint="1" id="10" invMass="10.000000" name="righthip" x="-4.500000" y="28.500000" z="0.500000" />
-    <particle bodyAreaHint="1" id="20" invMass="10.000000" name="lefthip" x="5.500000" y="28.500000" z="0.500000" />
-    <particle bodyAreaHint="1" id="12285328" invMass="15.000000" name="rightknee" x="-4.500000" y="13.500000" z="0.500000" />
-    <particle bodyAreaHint="1" id="21" invMass="15.000000" name="leftknee" x="5.500000" y="13.500000" z="0.500000" />
-    <particle bodyAreaHint="1" id="12285680" invMass="20.000000" name="rightfoot" x="-4.500000" y="0.500000" z="0.500000" />
-    <particle bodyAreaHint="1" id="22" invMass="20.000000" name="leftfoot" x="5.500000" y="0.500000" z="0.500000" />
-    <stick a="12285680" b="12285328" />
-    <stick a="12285328" b="10" />
-    <stick a="10" b="20" />
-    <stick a="20" b="21" />
-    <stick a="21" b="22" />
-    <stick a="10" b="1" />
-    <stick a="1" b="15" />
-    <stick a="15" b="25" />
-    <stick a="20" b="1" />
-    <stick a="1" b="25" />
-    <stick a="25" b="12273840" />
-    <stick a="12273840" b="12273488" />
-    <stick a="15" b="12274576" />
-    <stick a="12274576" b="12274112" />
-    <stick a="15" b="45" />
-    <stick a="45" b="25" />
-    <stick a="45" b="50" />
-</skeleton>""")
-        model.append(skeleton)
+        skeleton = GetSkeleton(path_skl)
+        # print(skeleton.getroot())
+        model.append(skeleton.getroot())
 
     
     

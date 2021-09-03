@@ -61,6 +61,7 @@ def ConvertFile(path_file):
 def main():
 	num_argv = len(sys.argv)
 	print('Author: Xe-No')
+	print('Version: 0.4')
 	if num_argv == 1:
 		while 1:
 			operator = input('''
